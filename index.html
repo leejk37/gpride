@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>가평어디나공유학교 자전거 마을답사 프로그램 · 사전 안내</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>
+@font-face {
+  font-family: 'Pretendard';
+  src: url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/woff2/PretendardVariable.woff2') format('woff2-variations');
+  font-weight: 45 920;
+}
+
+:root{
+  --paper:#F6F3EC;
+  --ink:#20261F;
+  --ink-soft:#5B6158;
+  --forest:#2B4A34;
+  --forest-deep:#1B3323;
+  --river:#2C6E85;
+  --clay:#B5652A;
+  --line:#DAD4C4;
+  --card:#FFFFFF;
+  --radius:14px;
+  --c1:#2F8F5B;
+  --c2:#2C8FC4;
+  --c3:#E2793B;
+  --c4:#8B5FBF;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+  background:var(--paper);
+  color:var(--ink);
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit;text-decoration:none;}
+
+/* --- topo texture header --- */
+.topbar{
+  position:sticky; top:0; z-index:50;
+  background:var(--forest-deep);
+  color:#EFE9DA;
+  padding:14px 20px;
+  display:flex; align-items:center; justify-content:space-between;
+  box-shadow:0 2px 10px rgba(0,0,0,.12);
+}
+.topbar .brand{
+  display:flex; align-items:baseline; gap:10px; cursor:pointer;
+}
+.topbar .brand .mark{
+  font-weight:800; font-size:17px; letter-spacing:-.01em;
+}
+.topbar .brand .sub{
+  font-size:12.5px; color:#B9C2AE;
+}
+.topbar .back{
+  font-size:14px; color:#D7CDAE; padding:6px 10px; border:1px solid #4A5C46; border-radius:8px;
+  cursor:pointer;
+}
+.topbar .back:hover{ background:#33472F; }
+
+main{max-width:960px; margin:0 auto; padding:28px 18px 80px;}
+
+/* ================= LIST VIEW ================= */
+.hero{
+  position:relative;
+  padding:34px 30px;
+  margin-bottom:22px;
+  border-radius:var(--radius);
+  background:linear-gradient(120deg, var(--forest-deep) 0%, var(--c2) 130%);
+  overflow:hidden;
+  box-shadow:0 8px 24px rgba(27,51,35,.18);
+}
+.hero::after{
+  content:"";
+  position:absolute; right:-40px; top:-40px; width:180px; height:180px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(255,255,255,.14), transparent 70%);
+}
+.hero .tag{
+  display:inline-block; font-size:12.5px; font-weight:700; color:#F3EFE0;
+  background:rgba(255,255,255,.15); border-radius:20px; padding:4px 12px; margin-bottom:14px;
+}
+.hero h1{
+  font-size:clamp(24px,4.2vw,34px);
+  font-weight:800;
+  letter-spacing:-.02em;
+  margin:0 0 12px;
+  color:#FFFFFF;
+}
+.hero p{
+  font-size:15px;
+  color:#E4EEDF;
+  max-width:640px;
+  margin:0 auto;
+  text-align:center;
+  position:relative;
+  z-index:1;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:16px;
+}
+@media(min-width:640px){
+  .grid{grid-template-columns:1fr 1fr;}
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:22px;
+  cursor:pointer;
+  transition:border-color .15s ease, transform .15s ease;
+  position:relative;
+  overflow:hidden;
+}
+.card:hover{ border-color:var(--forest); transform:translateY(-2px); box-shadow:0 6px 18px rgba(27,51,35,.10); }
+.card .accent-bar{ position:absolute; top:0; left:0; right:0; height:5px; }
+.card .round{
+  font-size:12.5px; font-weight:800;
+  margin-bottom:8px;
+  display:inline-flex; align-items:center; gap:6px;
+}
+.card .round .dot-badge{ width:7px; height:7px; border-radius:50%; display:inline-block; }
+.card h3{
+  font-size:20px; margin:0 0 4px; font-weight:800; color:var(--forest-deep);
+  letter-spacing:-.01em;
+}
+.card .place{ font-size:13.5px; color:var(--ink-soft); margin-bottom:16px; }
+.card .stats{
+  display:flex; gap:14px; flex-wrap:wrap;
+  border-top:1px solid var(--line); padding-top:14px;
+}
+.card .stat{ font-size:13px; color:var(--ink-soft); }
+.card .stat b{ color:var(--ink); font-size:15px; display:block; font-weight:700; }
+.card .spark{ height:34px; margin-top:12px; }
+.card .spark path{ fill:none; stroke:var(--clay); stroke-width:2; }
+.card .spark polygon{ fill:var(--clay); opacity:.08; }
+
+.safety-note{
+  margin-top:34px;
+  background:#EFEADA;
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:20px 22px;
+}
+.safety-note h4{ margin:0 0 8px; font-size:15px; color:var(--forest-deep); font-weight:800;}
+.safety-note p{ margin:0; font-size:13.5px; color:var(--ink-soft); }
+
+/* ================= DETAIL VIEW ================= */
+.detail-head{ margin-bottom:18px; }
+.detail-head .round2{ font-size:13px; font-weight:700; color:var(--river); margin-bottom:6px;}
+.detail-head h2{ font-size:clamp(24px,4vw,32px); margin:0 0 8px; font-weight:800; color:var(--forest-deep); letter-spacing:-.02em;}
+.detail-head .route-path{ font-size:14px; color:var(--ink-soft); }
+
+.course-tabs{ display:flex; gap:8px; margin:16px 0 4px; flex-wrap:wrap; }
+.course-tab{
+  font-size:13.5px; font-weight:700; padding:8px 16px; border-radius:20px;
+  border:1.5px solid var(--line); background:var(--card); color:var(--ink-soft);
+  cursor:pointer; transition:all .15s ease;
+}
+.course-tab.active{ color:#fff; border-color:transparent; }
+.course-tab:hover:not(.active){ border-color:var(--forest); }
+
+#map{
+  width:100%; height:360px; border-radius:var(--radius);
+  border:1px solid var(--line);
+  margin:18px 0;
+  background:#e9e5d8;
+}
+#map:fullscreen{ border-radius:0; height:100vh; }
+.fs-btn{
+  position:absolute; top:10px; right:10px; z-index:1000;
+  width:34px; height:34px;
+  background:#fff; border:1px solid var(--line); border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,.15);
+}
+.fs-btn:hover{ background:#F3F0E6; }
+.fs-btn svg{ width:16px; height:16px; }
+
+.statbar{
+  display:grid; grid-template-columns:repeat(2,1fr); gap:1px;
+  background:var(--line);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  overflow:hidden;
+  margin-bottom:22px;
+}
+@media(min-width:560px){ .statbar{grid-template-columns:repeat(4,1fr);} }
+.statbar .cell{ background:var(--card); padding:16px 14px; }
+.statbar .cell .num{ font-size:22px; font-weight:800; color:var(--forest-deep); }
+.statbar .cell .num span{ font-size:13px; font-weight:600; color:var(--ink-soft); margin-left:2px;}
+.statbar .cell .lbl{ font-size:12.5px; color:var(--ink-soft); margin-top:2px;}
+
+.section{ margin-bottom:26px; }
+.section h4{
+  font-size:15px; font-weight:800; color:var(--forest-deep); margin:0 0 12px;
+  display:flex; align-items:center; gap:8px;
+}
+
+#elevchart{ width:100%; height:190px; display:block; }
+
+.wp-list{ display:flex; flex-wrap:wrap; gap:8px; }
+.wp-list .wp{
+  background:var(--card); border:1px solid var(--line); border-radius:20px;
+  padding:6px 14px; font-size:13.5px; color:var(--ink);
+}
+.wp-list .arrow{ color:var(--ink-soft); align-self:center; font-size:13px; }
+
+.check-grid{ display:grid; grid-template-columns:1fr; gap:10px;}
+@media(min-width:640px){ .check-grid{grid-template-columns:1fr 1fr;} }
+.check-item{
+  display:flex; gap:10px; background:var(--card); border:1px solid var(--line);
+  border-radius:10px; padding:12px 14px; font-size:13.5px; color:var(--ink);
+}
+.check-item .dot{ color:var(--clay); font-weight:800; }
+
+.editable-note{
+  font-size:12.5px; color:var(--ink-soft); border-left:3px solid var(--river);
+  padding:8px 12px; background:#EEF3F1; border-radius:0 8px 8px 0; margin-top:14px;
+}
+
+footer{
+  text-align:center; font-size:12px; color:var(--ink-soft); padding:30px 0 10px;
+}
+
+.hidden{ display:none !important; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand" id="brandHome">
+    <span class="mark">RAS 다 같이 돌자, 가평 한바퀴</span>
+    <span class="sub">지역맞춤형 공유학교 라이딩 프로그램</span>
+  </div>
+  <div class="back hidden" id="backBtn">← 전체 코스 보기</div>
+</div>
+
+<main>
+
+  <!-- LIST VIEW -->
+  <section id="listView">
+    <div class="hero">
+      <span class="tag">🚴 가평어디나공유학교 자전거 마을답사 프로그램</span>
+      <h1>가평 라이딩, 미리 둘러보고 떠나요</h1>
+      <p>이번 9월에 공유학교에서 가평군의 네 지역을 자전거로 돌아봅니다. 라이딩 전 각 코스의 경로와 거리, 언덕 구간을 미리 확인하세요. 제시된 코스는 예시이며, 참가학생의 라이딩 역량에 따라 코스와 거리는 변경될 수 있습니다.</p>
+
+    </div>
+    <div class="grid" id="cardGrid"></div>
+
+    <div class="section" style="margin-top:8px;">
+      <h4>학생 준비물</h4>
+      <div class="check-grid">
+        <div class="check-item"><span class="dot">·</span> 자전거 헬멧 (필수 착용)</div>
+        <div class="check-item"><span class="dot">·</span> 물통(자전거에 거치)</div>
+        <div class="check-item"><span class="dot">·</span> 운동화(샌들·슬리퍼 금지)</div>
+        <div class="check-item"><span class="dot">·</span> 예비튜브(자신의 자전거에 맞는 튜브)</div>
+        <div class="check-item"><span class="dot">·</span> 우비(필요 시)</div>
+        <div class="check-item"><span class="dot">·</span> 에너지바·교통카드·비상금</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h4>교사 준비물</h4>
+      <div class="check-grid">
+        <div class="check-item"><span class="dot">·</span> 통신기기(헬멧장착무전기) 10개</div>
+        <div class="check-item"><span class="dot">·</span> 액션캠(기록장비)</div>
+        <div class="check-item"><span class="dot">·</span> 예비튜브(700*25C) 및 타이어 주걱</div>
+        <div class="check-item"><span class="dot">·</span> 전동펌프 및 CO2 카트리지</div>
+        <div class="check-item"><span class="dot">·</span> 사이클링컴퓨터</div>
+        <div class="check-item"><span class="dot">·</span> 응급구조키트(물, 소독약, 알콜솜, 습윤밴드)</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h4>안전 수칙</h4>
+      <div class="check-grid">
+        <div class="check-item"><span class="dot">·</span> 보호자는 만약의 상황에 대비하여 차로 30분내에 도착할 수 있어야 합니다</div>
+        <div class="check-item"><span class="dot">·</span> 인솔 교사보다 앞서 나가지 않습니다</div>
+        <div class="check-item"><span class="dot">·</span> 앞자전거를 추월하지 않습니다</div>
+        <div class="check-item"><span class="dot">·</span> 차도 구간에서는 인도·갓길 쪽으로 붙어 이동합니다</div>
+        <div class="check-item"><span class="dot">·</span> 교차로·횡단보도는 반드시 내려서 이동합니다</div>
+        <div class="check-item"><span class="dot">·</span> 앞자전거와 일정 간격을 유지합니다</div>
+        <div class="check-item"><span class="dot">·</span> 인솔자의 무전을 경청하며 달립니다</div>
+        <div class="check-item"><span class="dot">·</span> 라이딩 전날 타이어공기압 및 제동장치를 확인합니다</div>
+        <div class="check-item"><span class="dot">·</span> 안장가방을 설치하고 예비튜브를 준비합니다</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DETAIL VIEW -->
+  <section id="detailView" class="hidden">
+    <div class="detail-head">
+      <div class="round2" id="dRound"></div>
+      <h2 id="dName"></h2>
+      <div class="route-path" id="dPath"></div>
+      <div class="route-path" id="dSchedule" style="font-weight:700; margin-top:4px;"></div>
+      <div class="course-tabs hidden" id="courseTabs"></div>
+    </div>
+
+    <div id="map"></div>
+
+    <div class="statbar">
+      <div class="cell"><div class="num" id="sDist"></div><div class="lbl">총 거리</div></div>
+      <div class="cell"><div class="num" id="sGain"></div><div class="lbl">누적 상승고도</div></div>
+      <div class="cell"><div class="num" id="sMax"></div><div class="lbl">최고 고도</div></div>
+      <div class="cell"><div class="num" id="sMin"></div><div class="lbl">최저 고도</div></div>
+    </div>
+
+    <div class="section" id="wpSection">
+      <h4>주요 경유지</h4>
+      <div class="wp-list" id="wpList"></div>
+    </div>
+
+    <div class="section">
+      <h4>고도 프로파일</h4>
+      <svg id="elevchart" viewBox="0 0 800 190" preserveAspectRatio="none"></svg>
+      <div class="editable-note" style="margin-top:10px;">가로축: 누적 거리(km) 및 예상 소요시간(시속 15km 라이딩 가정 · 참고용 추정치) · 세로축: 고도(m, 50m 간격)</div>
+    </div>
+  </section>
+
+</main>
+
+<footer>가평어디나공유학교 'RAS 다 같이 돌자, 가평 한바퀴' · 라이드위드GPS 경로 기반</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="routes_data.js"></script>
+<script>
+const ROUND_LABELS = ["1회차","2회차","3회차","4회차"];
+const ROUND_COLORS = ["#2F8F5B","#2C8FC4","#E2793B","#8B5FBF"];
+
+let map = null;
+let mapLayer = null;
+
+function fmtDist(km){ return km.toFixed(1) + '<span>km</span>'; }
+function fmtM(v){ return Math.round(v) + '<span>m</span>'; }
+
+function buildCards(){
+  const grid = document.getElementById('cardGrid');
+  grid.innerHTML = '';
+  ROUTES.forEach((r, i) => {
+    const color = ROUND_COLORS[i % ROUND_COLORS.length];
+    const c0 = r.courses[0];
+    const pts = c0.coords.map(c=>c[2]);
+    const min = Math.min(...pts), max = Math.max(...pts);
+    const w = 300, h = 34;
+    let d = pts.map((v,idx) => {
+      const x = (idx/(pts.length-1))*w;
+      const y = h - ((v-min)/(max-min||1))*h;
+      return (idx===0?'M':'L')+x.toFixed(1)+','+y.toFixed(1);
+    }).join(' ');
+    const poly = d + ` L${w},${h} L0,${h} Z`;
+
+    const card = document.createElement('div');
+    card.className = 'card';
+    const scheduleLine = r.schedule
+      ? `📅 ${r.schedule.date}  ${r.schedule.time} · ${r.schedule.departure} 출발`
+      : `📅 일정 안내 예정`;
+    const multiBadge = r.courses.length > 1
+      ? `<span style="font-size:11.5px; font-weight:700; color:${color}; background:${color}1A; border-radius:10px; padding:2px 8px; margin-left:8px;">A/B 코스</span>`
+      : '';
+    card.innerHTML = `
+      <div class="accent-bar" style="background:${color}"></div>
+      <div class="round" style="color:${color}"><span class="dot-badge" style="background:${color}"></span>${ROUND_LABELS[i] || (i+1)+'회차'}${multiBadge}</div>
+      <h3>${r.label}</h3>
+      <div class="place">${c0.name}${c0.waypoints.length ? ' · ' + c0.waypoints[0] + ' 출발' : ''}</div>
+      <div class="place" style="margin-top:-10px; font-weight:600; color:${r.schedule ? 'var(--ink)' : 'var(--ink-soft)'};">${scheduleLine}</div>
+      <svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+        <polygon points="${poly.replace(/[ML]/g,'').replace(/,/g,' ')}" fill="${color}" opacity="0.10"></polygon>
+        <path d="${d}" fill="none" stroke="${color}" stroke-width="2"></path>
+      </svg>
+      <div class="stats">
+        <div class="stat"><b>${c0.distance_km}km</b>거리</div>
+        <div class="stat"><b>+${c0.elev_gain_m}m</b>상승고도</div>
+        <div class="stat"><b>${c0.elev_max}m</b>최고고도</div>
+      </div>
+    `;
+    card.addEventListener('click', () => { location.hash = '#' + r.key; });
+    grid.appendChild(card);
+  });
+}
+
+function haversineKm(lat1, lon1, lat2, lon2){
+  const R = 6371;
+  const toRad = d => d * Math.PI / 180;
+  const dLat = toRad(lat2-lat1), dLon = toRad(lon2-lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+// 초등학생 평균 라이딩 속도 가정치(km/h) — 실측 시간 데이터가 없어 추정값입니다. 필요 시 이 숫자만 바꾸면 전체 회차에 반영됩니다.
+const ASSUMED_SPEED_KMH = 15;
+
+function fmtMinutes(min){
+  const m = Math.round(min);
+  if(m < 60) return m + '분';
+  const h = Math.floor(m/60), rem = m % 60;
+  return rem === 0 ? h + '시간' : h + '시간 ' + rem + '분';
+}
+
+function drawElevChart(coords, color, totalDistanceKm){
+  const svg = document.getElementById('elevchart');
+  const W = 800, H = 190;
+  const padL = 46, padR = 12, padT = 12, padB = 40;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+
+  const eles = coords.map(c=>c[2]);
+  const rawMin = Math.min(...eles), rawMax = Math.max(...eles);
+  const margin = Math.max((rawMax - rawMin) * 0.1, 5);
+  const min = Math.floor((rawMin - margin)/50)*50;
+  const max = Math.ceil((rawMax + margin)/50)*50;
+
+  // 누적 거리(상대 위치 계산용)
+  const cum = [0];
+  for(let i=1;i<coords.length;i++){
+    cum.push(cum[i-1] + haversineKm(coords[i-1][0], coords[i-1][1], coords[i][0], coords[i][1]));
+  }
+  const cumTotal = cum[cum.length-1] || 1;
+  const dist = totalDistanceKm || cumTotal;
+
+  const xAt = frac => padL + frac*plotW;
+  const yAt = v => padT + plotH - ((v-min)/(max-min||1))*plotH;
+
+  let path = '';
+  coords.forEach((c,i) => {
+    const x = xAt(cum[i]/cumTotal);
+    const y = yAt(c[2]);
+    path += (i===0?'M':'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+  });
+  const area = path + `L${xAt(1)},${yAt(min)} L${xAt(0)},${yAt(min)} Z`;
+
+  // Y축(고도) 눈금: 50m 간격 고정값(50~300)
+  const ELEV_TICKS = [50,100,150,200,250,300];
+  let yGrid = '';
+  ELEV_TICKS.forEach(v => {
+    if(v < min || v > max) return;
+    const y = yAt(v);
+    yGrid += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#DAD4C4" stroke-width="1" stroke-dasharray="3,3"/>`;
+    yGrid += `<text x="${padL-8}" y="${y+4}" text-anchor="end" font-size="11" fill="#5B6158">${v}m</text>`;
+  });
+
+  // X축(거리 + 예상 소요시간) 눈금 5단
+  let xGrid = '';
+  for(let t=0;t<=4;t++){
+    const frac = t/4;
+    const x = xAt(frac);
+    const dKm = (dist*frac).toFixed(1);
+    const tMin = (dist*frac / ASSUMED_SPEED_KMH) * 60;
+    xGrid += `<line x1="${x}" y1="${padT}" x2="${x}" y2="${H-padB}" stroke="#DAD4C4" stroke-width="1" stroke-dasharray="3,3"/>`;
+    xGrid += `<text x="${x}" y="${H-padB+16}" text-anchor="middle" font-size="11" fill="#20261F" font-weight="600">${dKm}km</text>`;
+    xGrid += `<text x="${x}" y="${H-padB+30}" text-anchor="middle" font-size="10" fill="#5B6158">${fmtMinutes(tMin)}</text>`;
+  }
+
+  svg.innerHTML = `
+    <defs>
+      <linearGradient id="elevGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${color}" stop-opacity="0.30"/>
+        <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    ${yGrid}
+    ${xGrid}
+    <path d="${area}" fill="url(#elevGrad)" stroke="none"></path>
+    <path d="${path}" fill="none" stroke="${color}" stroke-width="2.4"></path>
+  `;
+}
+
+function addFullscreenButton(){
+  const mapEl = document.getElementById('map');
+  const btn = document.createElement('div');
+  btn.className = 'fs-btn';
+  const expandIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="#2B4A34" stroke-width="2" stroke-linecap="round"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg>';
+  const shrinkIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="#2B4A34" stroke-width="2" stroke-linecap="round"><path d="M3 8V3h5M21 8V3h-5M3 16v5h5M21 16v5h-5"/></svg>';
+  btn.innerHTML = expandIcon;
+  btn.title = '전체화면';
+  btn.addEventListener('click', () => {
+    if(!document.fullscreenElement){
+      (mapEl.requestFullscreen || mapEl.webkitRequestFullscreen || mapEl.msRequestFullscreen).call(mapEl);
+    } else {
+      (document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen).call(document);
+    }
+  });
+  mapEl.appendChild(btn);
+  document.addEventListener('fullscreenchange', () => {
+    btn.innerHTML = document.fullscreenElement ? shrinkIcon : expandIcon;
+    setTimeout(() => map && map.invalidateSize(), 120);
+  });
+}
+
+function showDetail(key){
+  const idx = ROUTES.findIndex(r => r.key === key);
+  if(idx === -1){ location.hash = ''; return; }
+  const r = ROUTES[idx];
+  const color = ROUND_COLORS[idx % ROUND_COLORS.length];
+
+  document.getElementById('listView').classList.add('hidden');
+  document.getElementById('detailView').classList.remove('hidden');
+  document.getElementById('backBtn').classList.remove('hidden');
+
+  const dRoundEl = document.getElementById('dRound');
+  dRoundEl.textContent = (ROUND_LABELS[idx]||(idx+1)+'회차') + ' · ' + r.label;
+  dRoundEl.style.color = color;
+  document.getElementById('dSchedule').textContent = r.schedule
+    ? `📅 ${r.schedule.date}  ${r.schedule.time} · ${r.schedule.departure} 출발`
+    : '📅 일정 안내 예정';
+
+  const tabsEl = document.getElementById('courseTabs');
+  if(r.courses.length > 1){
+    tabsEl.classList.remove('hidden');
+    tabsEl.innerHTML = r.courses.map((c,ci) => `<div class="course-tab" data-ci="${ci}">${c.id}코스 · ${c.name}</div>`).join('');
+    Array.from(tabsEl.children).forEach(btn => {
+      btn.addEventListener('click', () => renderCourse(r, Number(btn.dataset.ci), color));
+    });
+  } else {
+    tabsEl.classList.add('hidden');
+    tabsEl.innerHTML = '';
+  }
+
+  renderCourse(r, 0, color);
+}
+
+function renderCourse(r, courseIdx, color){
+  const c = r.courses[courseIdx];
+
+  const tabsEl = document.getElementById('courseTabs');
+  Array.from(tabsEl.children).forEach((btn,ci) => {
+    if(ci === courseIdx){ btn.classList.add('active'); btn.style.background = color; }
+    else { btn.classList.remove('active'); btn.style.background = ''; }
+  });
+
+  document.getElementById('dName').textContent = c.name;
+  document.getElementById('dPath').textContent = c.waypoints.length ? c.waypoints.join('  ›  ') : '전체 경로는 아래 지도를 확인하세요';
+
+  document.getElementById('sDist').innerHTML = fmtDist(c.distance_km);
+  document.getElementById('sGain').innerHTML = '+' + fmtM(c.elev_gain_m);
+  document.getElementById('sMax').innerHTML = fmtM(c.elev_max);
+  document.getElementById('sMin').innerHTML = fmtM(c.elev_min);
+
+  const wpSection = document.getElementById('wpSection');
+  const wpList = document.getElementById('wpList');
+  if(c.waypoints.length){
+    wpSection.classList.remove('hidden');
+    wpList.innerHTML = c.waypoints.map((w,i) => {
+      const chip = `<span class="wp">${w}</span>`;
+      return i < c.waypoints.length-1 ? chip + '<span class="arrow">→</span>' : chip;
+    }).join('');
+  } else {
+    wpSection.classList.add('hidden');
+  }
+
+  drawElevChart(c.coords, color, c.distance_km);
+
+  // map
+  if(!map){
+    map = L.map('map', {scrollWheelZoom:true});
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(map);
+    addFullscreenButton();
+  }
+  if(mapLayer){ map.removeLayer(mapLayer); }
+  const latlngs = c.coords.map(pt => [pt[0], pt[1]]);
+  mapLayer = L.layerGroup().addTo(map);
+  L.polyline(latlngs, {color:color, weight:4, opacity:0.9}).addTo(mapLayer);
+  L.circleMarker(latlngs[0], {radius:7, color:'#2B4A34', fillColor:'#2B4A34', fillOpacity:1, weight:2}).bindTooltip('출발', {permanent:false}).addTo(mapLayer);
+  L.circleMarker(latlngs[latlngs.length-1], {radius:7, color:color, fillColor:color, fillOpacity:1, weight:2}).bindTooltip('도착', {permanent:false}).addTo(mapLayer);
+  map.fitBounds(L.polyline(latlngs).getBounds(), {padding:[20,20]});
+  setTimeout(() => map.invalidateSize(), 50);
+}
+
+function showList(){
+  document.getElementById('detailView').classList.add('hidden');
+  document.getElementById('listView').classList.remove('hidden');
+  document.getElementById('backBtn').classList.add('hidden');
+}
+
+function route(){
+  const key = location.hash.replace('#','');
+  if(key && ROUTES.some(r=>r.key===key)){
+    showDetail(key);
+  } else {
+    showList();
+  }
+  window.scrollTo(0,0);
+}
+
+document.getElementById('backBtn').addEventListener('click', () => location.hash = '');
+document.getElementById('brandHome').addEventListener('click', () => location.hash = '');
+window.addEventListener('hashchange', route);
+
+buildCards();
+route();
+</script>
+</body>
+</html>
