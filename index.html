@@ -569,6 +569,11 @@ function renderCourse(r, courseIdx, color){
       maxZoom: 19
     }).addTo(map);
     addFullscreenButton();
+    // GAS 등 iframe으로 한 번 더 감싸는 호스팅 환경에서는 지도 컨테이너의
+    // 초기 크기가 0으로 잡혀 타일이 안 보일 수 있어, 크기 변화를 계속 감시해 재계산합니다.
+    if(window.ResizeObserver){
+      new ResizeObserver(() => map.invalidateSize()).observe(document.getElementById('map'));
+    }
   }
   if(mapLayer){ map.removeLayer(mapLayer); }
   const latlngs = c.coords.map(pt => [pt[0], pt[1]]);
@@ -577,7 +582,7 @@ function renderCourse(r, courseIdx, color){
   L.circleMarker(latlngs[0], {radius:7, color:'#2B4A34', fillColor:'#2B4A34', fillOpacity:1, weight:2}).bindTooltip('출발', {permanent:false}).addTo(mapLayer);
   L.circleMarker(latlngs[latlngs.length-1], {radius:7, color:color, fillColor:color, fillOpacity:1, weight:2}).bindTooltip('도착', {permanent:false}).addTo(mapLayer);
   map.fitBounds(L.polyline(latlngs).getBounds(), {padding:[20,20]});
-  setTimeout(() => map.invalidateSize(), 50);
+  [50, 200, 500, 1000].forEach(ms => setTimeout(() => map && map.invalidateSize(), ms));
 }
 
 function showList(){
